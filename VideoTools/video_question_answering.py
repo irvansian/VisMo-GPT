@@ -15,10 +15,10 @@ import openai
 
 class VideoDescriptor:
     def __init__(self, device):
-        print("Initializing VideoDescriptor")
+        print("Initializing Video QA")
         self.client = openai.ChatCompletion()
 
-    @prompts(name="Get Video Description",
+    @prompts(name="Video Question Answering",
              description="useful when you want to know what is inside the video. receives video_path as input. "
                          "The input to this tool should be a string, representing the video_path. ")
     def inference(self, video_path):

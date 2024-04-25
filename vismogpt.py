@@ -59,7 +59,7 @@ from VideoTools.video_clipping import VideoClipping
 from VideoTools.text2vid import Text2Video
 from VideoTools.vid2vid import Video2Video
 from VideoTools.vid2frames import Video2Frames
-from VideoTools.video_descriptor import VideoDescriptor
+from VideoTools.video_question_answering import VideoDescriptor
 from VideoTools.image2video import Image2Video
 
 # Grounding DINO
@@ -185,7 +185,6 @@ def cut_dialogue_history(history_memory, keep_last_n_words=500):
 
 class ConversationBot:
     def __init__(self, load_dict):
-        # load_dict = {'VisualQuestionAnswering':'cuda:0', 'ImageCaptioning':'cuda:1',...}
         print(f"Initializing VisualChatGPT, load_dict={load_dict}")
         if 'ImageCaptioning' not in load_dict:
             raise ValueError("You have to load ImageCaptioning as a basic function for VisualChatGPT")
@@ -337,7 +336,7 @@ if __name__ == '__main__':
 
     print(os.environ.get('OPENAI_API_KEY', 'Environment variable not set'))
     parser = argparse.ArgumentParser()
-    parser.add_argument('--load', type=str, default="ImageCaptioning_cpu, VisualQuestionAnswering_cpu")
+    parser.add_argument('--load', type=str, default="ImageCaptioning_cpu, Video2Frames_cpu, VideoClipping_cpu")
     args = parser.parse_args()
     load_dict = {e.split('_')[0].strip(): e.split('_')[1].strip() for e in args.load.split(',')}
     bot = ConversationBot(load_dict=load_dict)
@@ -361,4 +360,4 @@ if __name__ == '__main__':
         clear.click(bot.memory.clear)
         clear.click(lambda: [], None, chatbot)
         clear.click(lambda: [], None, state)
-    demo.launch(server_name="127.0.0.1", server_port=7861)
+    demo.launch(share=False, server_name="127.0.0.1", server_port=7861)

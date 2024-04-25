@@ -1,5 +1,6 @@
 import cv2
 import os
+from pathlib import Path
 
 from ImageTools.imgutils import prompts
 
@@ -11,46 +12,55 @@ class Video2Frames:
              description="useful when you want to extract the frames of a video "
                          "The input to this tool should be a video_path, start_second "
                          "(default value is start of the video), end_second (default value is "
-                         "end of the video).")
+                         "end of the video). The output of this tool is the dir where the "
+                         "frames are saved. To get the frame from a video can be referenced with"
+                         "/video/frames/{8 letter uid from the vid}/frame_{04d}.jpg")
     def inference(self, video_path, start_second=None, end_second=None):
-        filename_with_extension = video_path.split('/')[-1]
-        print(filename_with_extension)
-        filename_without_extension = filename_with_extension.split('.')[0]
-        output_dir = os.path.join('video', 'frames', filename_without_extension)
-        os.makedirs(output_dir, exist_ok=True)
+    # Check if video exists
+        if not os.path.exists(video_path):
+            print(f"Error: Video path does not exist {video_path}")
+            return
 
+    # Create a VideoCapture object
         cap = cv2.VideoCapture(video_path)
+
+    # Check if video opened successfully
         if not cap.isOpened():
-            print(f"Failed to open video: {video_path}")
-            cap.release()
-            return None 
+            print(f"Error: Could not open video {video_path}")
+            return
 
-        fps = int(cap.get(cv2.CAP_PROP_FPS))
-        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        video_duration = total_frames / fps
+    # Set the starting frame
+        if start_second is not None:
+            cap.set(cv2.CAP_PROP_POS_MSEC, start_second * 1000)
 
-        # Set default start and end times if they are not provided
-        start_second = start_second if start_second is not None else 0
-        end_second = end_second if end_second is not None else video_duration
+    # Get video UID from the path
+        uid = Path(video_path).stem  # Extracts uid from file name 'video/{uid}.mp4'
 
-        # Calculate start and end frames
-        start_frame = int(start_second * fps)
-        end_frame = int(end_second * fps)
+    # Create directory for frames relative to the current script location
+        frames_dir = os.path.join('video', 'frames', uid)
+        os.makedirs(frames_dir, exist_ok=True)
 
-        # Set the initial position of the video
-        cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
-
-        output_frame_number = 0
-        frame_number = start_frame
-        while cap.isOpened() and frame_number <= end_frame:
+    # Read until video is completed or end_second is reached
+        frame_id = 0
+        while cap.isOpened():
             ret, frame = cap.read()
-            if ret:
-                frame_filename = os.path.join(output_dir, f'{output_frame_number:03d}.jpg')
-                cv2.imwrite(frame_filename, frame)
-                frame_number += 1
-                output_frame_number += 1
-            else:
+
+        # If frame is read correctly, ret is True
+            if not ret:
                 break
 
+        # If end_second is defined and we have reached or passed it, break the loop
+            current_second = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000.0
+            if end_second is not None and current_second > end_second:
+                break
+
+        # Save frame as image file
+            frame_path = os.path.join(frames_dir, f'frame_{frame_id:04d}.jpg')
+            cv2.imwrite(frame_path, frame)
+            frame_id += 1
+
+    # When everything done, release the video capture object
         cap.release()
-        return output_dir  # Return the frames per second
+        print(f"Frames extracted to directory: {frames_dir}")
+        return frames_dir
+
