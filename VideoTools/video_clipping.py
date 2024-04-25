@@ -1,10 +1,9 @@
-import subprocess
 import uuid
 
 import cv2
 import os
-import glob
 
+import numpy as np
 from ImageTools.imgutils import prompts
 
 
@@ -25,13 +24,11 @@ class VideoClipping():
             print(f"Failed to open video: {input_video}")
             return
 
-        # Get the frames per second (fps) and calculate the frame indices for the start and end times
         fps = int(cap.get(cv2.CAP_PROP_FPS))
         start_frame = int(start_time * fps)
         end_frame = int(end_time * fps)
 
-        # Define the codec and create a VideoWriter object to save the output video
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec for .mp4 format
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter(output_video, fourcc, fps, (int(cap.get(3)), int(cap.get(4))))
 
         frame_number = 0
@@ -78,5 +75,77 @@ class VideoClipping():
                 break
         cap.release()
         return fps  # Return the frames per second
+
+    @prompts(name="Stitch Videos",
+             description="useful when you want to stitch multiple videos. "
+                         "like: stitch the videos video\001.mp4, video\002.mp4, and video\003.mp4. "
+                         "The input to this tool should be a comma separated string of video paths.")
+    def inference_stitch(self, inputs):
+        list_video_paths = inputs.split(',')
+        video_captures = []
+        frame_rates = []
+
+        for path in list_video_paths:
+            try:
+                cap = cv2.VideoCapture(path.strip())
+                if not cap.isOpened():
+                    print(f"Error opening video: {path}")
+                    return None
+                # Retrieve and store the frame rate
+                fps = cap.get(cv2.CAP_PROP_FPS)
+                frame_rates.append(fps)
+                video_captures.append(cap)
+            except Exception as e:
+                print(f"Error processing video {path}: {e}")
+                return None
+
+        average_fps = np.mean(frame_rates) if frame_rates else 24
+
+        # Determine the frame size from the first video
+        ret, frame = video_captures[0].read()
+        if not ret:
+            print("Error reading the first frame.")
+            for cap in video_captures:
+                cap.release()
+            return None
+        first_video_width = frame.shape[1]
+        first_video_height = frame.shape[0]
+
+        video_filename = os.path.join('video', f"{str(uuid.uuid4())[:8]}.mp4")
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out = cv2.VideoWriter(video_filename, fourcc, average_fps, (first_video_width, first_video_height))
+
+        # Rewind the first video capture to start from the beginning
+        video_captures[0].set(cv2.CAP_PROP_POS_FRAMES, 0)
+
+        while True:
+            frames = []
+            all_frames_read = True
+
+            for cap in video_captures:
+                ret, frame = cap.read()
+                if ret:
+                    frame = self.resize_frame_to_match_first(frame, first_video_width, first_video_height)
+                    frames.append(frame)
+                else:
+                    all_frames_read = False
+                    break
+
+            if not all_frames_read:
+                break
+
+            stitched_frame = cv2.hconcat(frames)
+            out.write(stitched_frame)
+
+        for cap in video_captures:
+            cap.release()
+        out.release()
+
+        return video_filename
+
+    def resize_frame_to_match_first(self, frame, width, height):
+        return cv2.resize(frame, (width, height))
+
+
 
 

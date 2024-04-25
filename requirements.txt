@@ -7,7 +7,7 @@ addict
 albumentations
 basicsr
 controlnet-aux
-diffusers~=0.21.4
+diffusers
 einops
 gradio~=3.47.1
 imageio
@@ -25,10 +25,12 @@ streamlit
 test-tube
 timm
 torchmetrics
-transformers~=4.34.0
+transformers
 webdataset
 yapf
 moviepy
+requests
+replicate
 
 pillow~=10.0.1
 groundingdino~=0.1.0
