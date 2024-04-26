@@ -31,6 +31,7 @@ yapf
 moviepy
 requests
 replicate
+pytube
 
 pillow~=10.0.1
 groundingdino~=0.1.0

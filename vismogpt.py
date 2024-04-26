@@ -62,6 +62,7 @@ from VideoTools.vid2frames import Video2Frames
 from VideoTools.video_question_answering import VideoDescriptor
 from VideoTools.image2video import Image2Video
 from VideoTools.video_localizer import SimpleVideoLocalizer
+from VideoTools.video_utils import VideoDownload
 
 # Grounding DINO
 # import groundingdino.datasets.transforms as T
@@ -292,7 +293,6 @@ class ConversationBot:
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-        # Resize only if video is horizontal
         if width > height:
             target_width = 672
             target_height = 384
@@ -337,7 +337,7 @@ if __name__ == '__main__':
 
     print(os.environ.get('OPENAI_API_KEY', 'Environment variable not set'))
     parser = argparse.ArgumentParser()
-    parser.add_argument('--load', type=str, default="ImageCaptioning_cpu, Video2Frames_cpu, VideoClipping_cpu, VisualQuestionAnswering_cpu")
+    parser.add_argument('--load', type=str, default="ImageCaptioning_cpu, Video2Frames_cpu, VideoClipping_cpu, VisualQuestionAnswering_cpu, VideoDescriptor_cpu, VideoDownload_cpu")
     args = parser.parse_args()
     load_dict = {e.split('_')[0].strip(): e.split('_')[1].strip() for e in args.load.split(',')}
     bot = ConversationBot(load_dict=load_dict)

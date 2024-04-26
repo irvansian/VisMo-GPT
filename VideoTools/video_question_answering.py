@@ -7,7 +7,7 @@ from PIL import Image
 from transformers import BlipProcessor, BlipForConditionalGeneration
 
 import cv2  # We're using OpenCV to read video, to install !pip install opencv-python
-# import base64
+import base64
 from langchain.llms.openai import OpenAIChat
 from ImageTools.imgutils import prompts
 
@@ -31,8 +31,8 @@ class VideoDescriptor:
 
         target_fps = 10
 
-        skip_frames = max(int(fps / target_fps), total_frames // (total_frames // 3))
-
+        # skip_frames = max(int(fps / target_fps), total_frames // (total_frames // 3))
+        skip_frames = 10
         base64Frames = []
         frame_count = 0
         while video.isOpened():
