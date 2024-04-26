@@ -36,3 +36,4 @@ pillow~=10.0.1
 groundingdino~=0.1.0
 matplotlib~=3.7.3
 scikit-image~=0.21.0
+sentence-transformers

@@ -64,7 +64,7 @@ from VideoTools.image2video import Image2Video
 from VideoTools.video_localizer import SimpleVideoLocalizer
 
 # Grounding DINO
-import groundingdino.datasets.transforms as T
+# import groundingdino.datasets.transforms as T
 # from groundingdino.models import build_model
 # from groundingdino.util import box_ops
 # from groundingdino.util.slconfig import SLConfig
@@ -337,7 +337,7 @@ if __name__ == '__main__':
 
     print(os.environ.get('OPENAI_API_KEY', 'Environment variable not set'))
     parser = argparse.ArgumentParser()
-    parser.add_argument('--load', type=str, default="ImageCaptioning_cpu, Video2Frames_cpu, VideoClipping_cpu")
+    parser.add_argument('--load', type=str, default="ImageCaptioning_cpu, Video2Frames_cpu, VideoClipping_cpu, VisualQuestionAnswering_cpu")
     args = parser.parse_args()
     load_dict = {e.split('_')[0].strip(): e.split('_')[1].strip() for e in args.load.split(',')}
     bot = ConversationBot(load_dict=load_dict)

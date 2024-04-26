@@ -13,8 +13,7 @@ class Video2Frames:
                          "The input to this tool should be a video_path, start_second "
                          "(default value is start of the video), end_second (default value is "
                          "end of the video). The output of this tool is the dir where the "
-                         "frames are saved. To get the frame from a video can be referenced with"
-                         "/video/frames/{8 letter uid from the vid}/frame_{04d}.jpg")
+                         "frames are saved.")
     def inference(self, video_path, start_second=None, end_second=None):
     # Check if video exists
         if not os.path.exists(video_path):

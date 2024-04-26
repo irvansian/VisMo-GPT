@@ -30,10 +30,10 @@ class VisualQuestionAnswering:
         # inputs = self.processor(raw_image, question, return_tensors="pt").to(self.device, self.torch_dtype)
         # out = self.model.generate(**inputs)
         # answer = self.processor.decode(out[0], skip_special_tokens=True)
-        inputs = self.processor(raw_image, text=question, return_tensors="pt").to(self.device, torch.float16)
+        prompt = "Question: " + question+ " Answer:"
+        inputs = self.processor(raw_image, text=prompt, return_tensors="pt").to(self.device, torch.float16)
         generated_ids = self.model.generate(**inputs, max_new_tokens=51)
         answer = self.processor.batch_decode(generated_ids, skip_special_tokens=True)[0].strip()
-        print(answer)
         print(f"\nProcessed VisualQuestionAnswering, Input Image: {image_path}, Input Question: {question}, "
               f"Output Answer: {answer}")
         return answer
