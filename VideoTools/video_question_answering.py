@@ -19,9 +19,12 @@ class VideoDescriptor:
         self.client = openai.ChatCompletion()
 
     @prompts(name="Video Question Answering",
-             description="useful when you want to know what is inside the video. receives video_path as input. "
-                         "The input to this tool should be a string, representing the video_path. ")
-    def inference(self, video_path):
+             description="useful when you want to know what is inside the video. receives omma separated string of 2,"
+                         "represents the video_path and the question to ask about the video. "
+                         "The input to this tool should be a string, representing the video_path. The output is the "
+                         "answer for the given question.")
+    def inference(self, inputs):
+        video_path, question = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         video = cv2.VideoCapture(video_path)
         total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
         fps = video.get(cv2.CAP_PROP_FPS)
@@ -50,8 +53,8 @@ class VideoDescriptor:
             {
                 "role": "user",
                 "content": [
-                    "These are frames from a video that I want to upload. It can be single or multiple scene video. Generate a CLIP-like description for every scene.",
-                    *map(lambda x: {"image": x, "resize": 768}, base64Frames[0::50]),
+                    "These are sorted frames from a video that I want to upload. I want to ask, " + question,
+                    *map(lambda x: {"image": x, "resize": 768}, base64Frames[0::10]),
                 ],
             },
         ]
