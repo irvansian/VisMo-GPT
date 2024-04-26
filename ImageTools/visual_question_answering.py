@@ -24,13 +24,17 @@ class VisualQuestionAnswering:
              description="useful when you need an answer for a question based on an image. "
                          "like: what is the background color of the last image, how many cats in this figure, what is in this figure. "
                          "The input to this tool should be a comma separated string of two, representing the image_path and the question")
-    def inference(self, inputs):
+    def inference(self, inputs, format='QA'):
         image_path, question = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         raw_image = Image.open(image_path).convert('RGB')
         # inputs = self.processor(raw_image, question, return_tensors="pt").to(self.device, self.torch_dtype)
         # out = self.model.generate(**inputs)
         # answer = self.processor.decode(out[0], skip_special_tokens=True)
-        prompt = "Question: " + question+ " Answer:"
+        if format == 'QA':
+            prompt = "Question: " + question + " Answer:"
+        else:
+            prompt = question
+
         inputs = self.processor(raw_image, text=prompt, return_tensors="pt").to(self.device, torch.float16)
         generated_ids = self.model.generate(**inputs, max_new_tokens=51)
         answer = self.processor.batch_decode(generated_ids, skip_special_tokens=True)[0].strip()
