@@ -10,9 +10,8 @@ class Video2Frames:
 
     @prompts(name="Extract Video Frames",
              description="useful when you want to extract the frames of a video "
-                         "The input to this tool should be a video_path, start_second "
-                         "(default value is start of the video), end_second (default value is "
-                         "end of the video). The output of this tool is the dir where the "
+                         "The input to this tool should be a video_path,"
+                         "The output of this tool is the dir where the "
                          "frames are saved.")
     def inference(self, video_path, start_second=None, end_second=None):
     # Check if video exists

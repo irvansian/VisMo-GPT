@@ -62,7 +62,7 @@ from VideoTools.vid2frames import Video2Frames
 from VideoTools.video_question_answering import VideoDescriptor
 from VideoTools.image2video import Image2Video
 from VideoTools.video_localizer import SimpleVideoLocalizer
-from VideoTools.video_utils import VideoDownload
+from VideoTools.video_utils import VideoDownload, VideoMetaData
 
 # Grounding DINO
 # import groundingdino.datasets.transforms as T
@@ -187,7 +187,7 @@ def cut_dialogue_history(history_memory, keep_last_n_words=500):
 
 class ConversationBot:
     def __init__(self, load_dict):
-        print(f"Initializing VisualChatGPT, load_dict={load_dict}")
+        print(f"Initializing VisMo-GPT, load_dict={load_dict}")
         if 'ImageCaptioning' not in load_dict:
             raise ValueError("You have to load ImageCaptioning as a basic function for VisualChatGPT")
 
@@ -314,10 +314,14 @@ class ConversationBot:
         cap.release()
         out.release()
 
-        Human_prompt = f'\nHuman: provide a video named {dest_path}. If you understand, say \"Received\". \n'
+        self.models['Video2Frames'].inference(dest_path)
+        thumbnail = os.path.join('video', 'frames', uid, 'frame_0000.jpg')
+        print("Thumbnail : " + thumbnail)
+
+        Human_prompt = f'\nHuman: provided a video named {dest_path}. If you understand, say \"Received\". \n'
         AI_prompt = "Received.  "
         self.agent.memory.buffer = self.agent.memory.buffer + Human_prompt + 'AI: ' + AI_prompt
-        state = state + [(f"![](file={dest_path})*{dest_path}*", AI_prompt)]
+        state = state + [(f"![](file={thumbnail})*{dest_path}*", AI_prompt)]
 
         return state, state, f'{txt} {dest_path} '
 
@@ -337,7 +341,8 @@ if __name__ == '__main__':
 
     print(os.environ.get('OPENAI_API_KEY', 'Environment variable not set'))
     parser = argparse.ArgumentParser()
-    parser.add_argument('--load', type=str, default="ImageCaptioning_cpu, Video2Frames_cpu, VideoClipping_cpu, VisualQuestionAnswering_cpu, VideoDescriptor_cpu, VideoDownload_cpu")
+    # parser.add_argument('--load', type=str, default="ImageCaptioning_cpu, Video2Frames_cpu, VideoClipping_cpu, VisualQuestionAnswering_cpu, VideoDescriptor_cpu, VideoDownload_cpu")
+    parser.add_argument('--load', type=str, default="ImageCaptioning_cpu, Video2Frames_cpu, VideoClipping_cpu, VideoDescriptor_cpu, VideoDownload_cpu")
     args = parser.parse_args()
     load_dict = {e.split('_')[0].strip(): e.split('_')[1].strip() for e in args.load.split(',')}
     bot = ConversationBot(load_dict=load_dict)

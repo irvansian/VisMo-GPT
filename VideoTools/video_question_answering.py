@@ -19,10 +19,11 @@ class VideoDescriptor:
         self.client = openai.ChatCompletion()
 
     @prompts(name="Video Question Answering",
-             description="useful when you want to know what is inside the video. receives omma separated string of 2,"
-                         "represents the video_path and the question to ask about the video. "
-                         "The input to this tool should be a string, representing the video_path. The output is the "
-                         "answer for the given question.")
+             description="useful when you want to know what is inside the video. receives comma separated string of 2,"
+                         "represents the video_path and the question to ask about video. "
+                         "IMPORTANT: This tool doesnt understand temporal question, it doenst know 'first 3 seconds, from 00:01 to 00:03' or something like that."
+                         "Phrase the question so that it doesnt contain any temporality."
+                         "The output is the answer for the given question.")
     def inference(self, inputs):
         video_path, question = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         video = cv2.VideoCapture(video_path)
@@ -53,8 +54,8 @@ class VideoDescriptor:
             {
                 "role": "user",
                 "content": [
-                    "These are sorted frames from a video that I want to upload. I want to ask, " + question,
-                    *map(lambda x: {"image": x, "resize": 768}, base64Frames[0::10]),
+                    "These are sorted frames from a 3 fps video that I want to upload. So every 3 frames is one second in the video. I want to ask, " + question,
+                    *map(lambda x: {"image": x, "resize": 768}, base64Frames[0::50]),
                 ],
             },
         ]
@@ -64,4 +65,5 @@ class VideoDescriptor:
             "max_tokens": 200,
         }
         result = self.client.create(**params)
+        print("Answer :" + result.choices[0].message.content)
         return result.choices[0].message.content

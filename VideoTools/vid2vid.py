@@ -5,12 +5,18 @@ import uuid
 
 import requests
 from ImageTools.imgutils import prompts
+from VideoTools.vid2frames import Video2Frames
+from ImageTools.image_captioning import ImageCaptioning
 
 class Video2Video:
-    def __init__(self, device):
-        self.url_endpoint = "https://hjx99ogdyc2r9x-5000.proxy.runpod.net/api/edit_video"
-        self.status_endpoint = "https://hjx99ogdyc2r9x-5000.proxy.runpod.net/api/status/"
-        self.download_endpoint = "https://hjx99ogdyc2r9x-5000.proxy.runpod.net/api/download/"
+    template_model = True
+    def __init__(self, ImageCaptioning: ImageCaptioning, Video2Frames: Video2Frames):
+        self.url_endpoint = "https://u3iuh7f23a9o13-5000.proxy.runpod.net/api/edit_video"
+        self.status_endpoint = "https://u3iuh7f23a9o13-5000.proxy.runpod.net/api/status/"
+        self.download_endpoint = "https://u3iuh7f23a9o13-5000.proxy.runpod.net/api/download/"
+
+        self.frame_extractor = Video2Frames
+        self.image_captioning = ImageCaptioning
         print("Initializing Text2Video")
 
     @prompts(name="Edit Video with Natural Language",
@@ -22,7 +28,19 @@ class Video2Video:
                          "this video to a girl smiling' the prompt should be 'a girl smiling'.")
     def inference(self, inputs):
         video_path, prompt = inputs.split(",", 1)
-        form_data = {'prompt': prompt}
+
+        frame_dir = self.frame_extractor.inference(video_path)
+        frame_files = [f for f in os.listdir(frame_dir) if f.endswith('.jpg')]  # Adjust the extension if necessary
+        frame_files.sort()
+
+        middle_index = len(frame_files) // 2
+        middle_frame = frame_files[middle_index] if frame_files else None
+        middle_frame_path = os.path.join(frame_dir, middle_frame) if middle_frame else None
+
+        inversion_prompt = self.image_captioning.inference(middle_frame_path)
+
+        print("Middle frame path:", middle_frame_path)
+        form_data = {'prompt': prompt, 'inversion_prompt' : inversion_prompt}
 
         with open(video_path, 'rb') as video_file:
             files = {'video': (video_file.name, video_file, 'video/mp4')}
