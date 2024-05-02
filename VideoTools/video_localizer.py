@@ -53,7 +53,7 @@ class SimpleVideoLocalizer:
                 if frame_count % frame_skip == 0:
                     description = self.image_capt.inference(frame_path)
                     result = self.image_qa.inference(inf_input)[:3].lower()
-                    if result == "yes" and self.cosine_similarity(description, information) >= 0.65:
+                    if result == "yes" and self.cosine_similarity(description, information) >= 0.50:
                         saved_frames.append(frame_path)
                 frame_count += 1
 

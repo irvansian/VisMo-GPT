@@ -366,4 +366,4 @@ if __name__ == '__main__':
         clear.click(bot.memory.clear)
         clear.click(lambda: [], None, chatbot)
         clear.click(lambda: [], None, state)
-    demo.launch(share=False, server_name="127.0.0.1", server_port=7861)
+    demo.launch(share=True, server_name="127.0.0.1", server_port=7861)
