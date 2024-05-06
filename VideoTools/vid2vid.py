@@ -11,9 +11,9 @@ from ImageTools.image_captioning import ImageCaptioning
 class Video2Video:
     template_model = True
     def __init__(self, ImageCaptioning: ImageCaptioning, Video2Frames: Video2Frames):
-        self.url_endpoint = "https://u3iuh7f23a9o13-5000.proxy.runpod.net/api/edit_video"
-        self.status_endpoint = "https://u3iuh7f23a9o13-5000.proxy.runpod.net/api/status/"
-        self.download_endpoint = "https://u3iuh7f23a9o13-5000.proxy.runpod.net/api/download/"
+        self.url_endpoint = "https://750zn651yz17aq-5000.proxy.runpod.net/api/edit_video"
+        self.status_endpoint = "https://750zn651yz17aq-5000.proxy.runpod.net/api/status/"
+        self.download_endpoint = "https://750zn651yz17aq-5000.proxy.runpod.net/api/download/"
 
         self.frame_extractor = Video2Frames
         self.image_captioning = ImageCaptioning
