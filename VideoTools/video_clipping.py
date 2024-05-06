@@ -75,12 +75,7 @@ class VideoClipping():
                 break
         cap.release()
         return fps  # Return the frames per second
-
-    @prompts(name="Stitch Videos",
-             description="useful when you want to stitch multiple videos. "
-                         "like: stitch the videos video\001.mp4, video\002.mp4, and video\003.mp4. "
-                         "The input to this tool should be a comma separated string of video paths.")
-    def inference_stitch(self, inputs):
+    def stitch(self, inputs):
         list_video_paths = inputs.split(',')
         video_captures = []
         frame_rates = []

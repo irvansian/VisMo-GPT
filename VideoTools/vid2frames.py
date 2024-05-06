@@ -12,7 +12,7 @@ class Video2Frames:
              description="useful when you want to extract the frames of a video "
                          "The input to this tool should be a video_path,"
                          "The output of this tool is the dir where the "
-                         "frames are saved.")
+                         "frames are saved. You cannot use the frame.")
     def inference(self, video_path, start_second=None, end_second=None):
     # Check if video exists
         if not os.path.exists(video_path):

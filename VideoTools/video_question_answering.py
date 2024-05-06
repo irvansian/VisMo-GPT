@@ -19,10 +19,9 @@ class VideoDescriptor:
         self.client = openai.ChatCompletion()
 
     @prompts(name="Video Question Answering",
-             description="useful when you want to know what is inside the video. receives comma separated string of 2,"
+             description="useful when you want to ask a question about the video content. "
+                         "receives comma separated string of 2,"
                          "represents the video_path and the question to ask about video. "
-                         "IMPORTANT: This tool doesnt understand temporal question, it doenst know 'first 3 seconds, from 00:01 to 00:03' or something like that."
-                         "Phrase the question so that it doesnt contain any temporality."
                          "The output is the answer for the given question.")
     def inference(self, inputs):
         video_path, question = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
@@ -30,40 +29,125 @@ class VideoDescriptor:
         total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
         fps = video.get(cv2.CAP_PROP_FPS)
 
-        target_fps = 10
+        # Calculate the number of frames to skip so that exactly 10 frames are sampled
+        if total_frames > 10:
+            skip_frames = (total_frames - 1) // 9  # -1 to ensure the last frame is included
+        else:
+            skip_frames = 1  # In case the video has fewer than 10 frames
 
-        # skip_frames = max(int(fps / target_fps), total_frames // (total_frames // 3))
-        skip_frames = 10
         base64Frames = []
         frame_count = 0
+        frame_selected = 0
+
         while video.isOpened():
             success, frame = video.read()
             if not success:
                 break
 
-            if frame_count % skip_frames == 0:
+            # Check if the current frame count matches the frame to be sampled
+            if frame_count == frame_selected * skip_frames:
                 _, buffer = cv2.imencode(".jpg", frame)
                 base64Frames.append(base64.b64encode(buffer).decode("utf-8"))
+                print("Frame", frame_count, "selected.")
+                frame_selected += 1
+                if frame_selected == 10:  # Stop if we have selected 10 frames
+                    break
 
             frame_count += 1
 
         video.release()
         print(len(base64Frames), "frames selected for processing.")
 
-        PROMPT_MESSAGES = [
-            {
-                "role": "user",
-                "content": [
-                    "These are sorted frames from a 3 fps video that I want to upload. So every 3 frames is one second in the video. I want to ask, " + question,
-                    *map(lambda x: {"image": x, "resize": 768}, base64Frames[0::50]),
-                ],
-            },
-        ]
+        # PROMPT_MESSAGES = [
+        #     {
+        #         "role": "user",
+        #         "content": [
+        #             "These are sorted frames from a video that I want to upload. I want to ask, " + question,
+        #             *map(lambda x: {"image": x, "resize": 512}, base64Frames[0::50]),
+        #         ],
+        #     },
+        # ]
+
         params = {
             "model": "gpt-4-vision-preview",
-            "messages": PROMPT_MESSAGES,
-            "max_tokens": 200,
+            "messages": self.create_message(image_list=base64Frames, question=question),
+            "max_tokens": 800,
         }
         result = self.client.create(**params)
         print("Answer :" + result.choices[0].message.content)
         return result.choices[0].message.content
+
+    def create_message(self, image_list, question):
+        message = [
+            {"role": "system", "content": "You are video question answering assistant."},
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": "These are sorted frames from a video that I want to upload. I want to ask, " + question,
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{image_list[0]}"
+                        },
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{image_list[1]}"
+                        },
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{image_list[2]}"
+                        },
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{image_list[3]}"
+                        },
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{image_list[4]}"
+                        },
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{image_list[5]}"
+                        },
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{image_list[6]}"
+                        },
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{image_list[7]}"
+                        },
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{image_list[8]}"
+                        },
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{image_list[9]}"
+                        },
+                    },
+                ],
+            }
+        ]
+        return message

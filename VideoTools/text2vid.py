@@ -5,10 +5,10 @@ from VideoTools.image2video import Image2Video
 
 
 class Text2Video:
-    def __init__(self, device):
-        self.device = device
-        self.text2image = Text2Image(device=device)
-        self.image2video = Image2Video(device=device)
+    template_model = True
+    def __init__(self, Text2Image: Text2Image, Image2Video: Image2Video):
+        self.text2image = Text2Image
+        self.image2video = Image2Video
 
     @prompts(name="Generate Video From Text",
              description="Useful when you want to generate a video from a user input text and save it to a file. "

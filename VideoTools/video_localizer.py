@@ -64,7 +64,6 @@ class SimpleVideoLocalizer:
         return start, end
 
     def cosine_similarity(self, sentence1, sentence2):
-        # Encode the sentences to get their embeddings
         print("Sentence 1 : " + sentence1)
         print("Sentence 2 : " + sentence2)
         embedding1 = self.semantic_model.encode(sentence1, convert_to_tensor=True)

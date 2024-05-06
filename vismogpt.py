@@ -316,12 +316,14 @@ class ConversationBot:
 
         self.models['Video2Frames'].inference(dest_path)
         thumbnail = os.path.join('video', 'frames', uid, 'frame_0000.jpg')
-        print("Thumbnail : " + thumbnail)
+        # print("Thumbnail : " + thumbnail)
 
         Human_prompt = f'\nHuman: provided a video named {dest_path}. If you understand, say \"Received\". \n'
         AI_prompt = "Received.  "
         self.agent.memory.buffer = self.agent.memory.buffer + Human_prompt + 'AI: ' + AI_prompt
         state = state + [(f"![](file={thumbnail})*{dest_path}*", AI_prompt)]
+        print(f"\nProcessed run_video, Input video: {dest_path}\nCurrent state: {state}\n"
+              f"Current Memory: {self.agent.memory.buffer}")
 
         return state, state, f'{txt} {dest_path} '
 
